@@ -6,12 +6,15 @@ import axios from "axios";
 import { useState } from "react";
 import { GetIpfsUrlFromPinata } from "../utils";
 
+// NFTPage component to display details of a specific NFT and enable purchasing
 export default function NFTPage(props) {
-  const [data, updateData] = useState({});
-  const [dataFetched, updateDataFetched] = useState({});
-  const [message, updateMessage] = useState("");
-  const [currAddress, updateCurrAddress] = useState("0x");
+  // State variables for managing NFT data, loading status, messages, and user's Ethereum address
+  const [data, updateData] = useState({}); // State variable for storing NFT data
+  const [dataFetched, updateDataFetched] = useState({}); // State variable to track if NFT data has been fetched
+  const [message, updateMessage] = useState(""); // State variable for displaying messages to the user
+  const [currAddress, updateCurrAddress] = useState("0x"); // State variable for the user's current Ethereum address
 
+  // Function to fetch and update details of a specific NFT using its tokenId
   async function getNFTData(tokenId) {
     const ethers = require("ethers");
     //After adding your Hardhat network to your metamask, this code will get providers and signers
@@ -24,7 +27,7 @@ export default function NFTPage(props) {
       MarketplaceJSON.abi,
       signer
     );
-    //create an NFT Token
+    // Fetch NFT details from the contract and its metadata from IPFS
     var tokenURI = await contract.tokenURI(tokenId);
     console.log(tokenURI);
     const listedToken = await contract.getListedTokenForId(tokenId);
@@ -34,6 +37,7 @@ export default function NFTPage(props) {
     meta = meta.data;
     console.log(listedToken);
 
+    // Format the NFT details for display
     let item = {
       price: meta.price,
       tokenId: tokenId,
@@ -43,17 +47,15 @@ export default function NFTPage(props) {
       name: meta.name,
       description: meta.description,
     };
-    // console.log(item);
-    updateData(item);
 
+    // Update state variables with fetched NFT data and user's Ethereum address
+    updateData(item);
     updateDataFetched(true);
-    console.log("address", addr);
     updateCurrAddress(addr);
   }
 
+  // Function to handle the purchase of the NFT with the given tokenId
   async function buyNFT(tokenId) {
-    // alert(`${tokenId}`);
-
     try {
       const ethers = require("ethers");
       //After adding your Hardhat network to your metamask, this code will get providers and signers
@@ -66,16 +68,17 @@ export default function NFTPage(props) {
         MarketplaceJSON.abi,
         signer
       );
-      console.log("data.price:", data.price);
+      // Parse the sale price from Ether to Wei
       const salePrice = ethers.utils.parseUnits(data.price, "ether");
 
       updateMessage("Buying the NFT... Please Wait (Upto 5 mins)");
-      //run the executeSale function
+      // Execute the NFT purchase transaction by calling the smart contract function
       let transaction = await contract.executeSale(tokenId, {
         value: salePrice,
       });
-      await transaction.wait();
+      await transaction.wait(); // Wait for the transaction to be mined and confirmed
 
+      // Display a success message to the user after a successful NFT purchase
       alert("You successfully bought the NFT!");
       updateMessage("");
     } catch (e) {
@@ -83,9 +86,14 @@ export default function NFTPage(props) {
     }
   }
 
+  // Get the tokenId parameter from the URL using React Router's useParams hook
   const params = useParams();
   const tokenId = params.tokenId;
+
+  // Fetch NFT data if it hasn't been fetched yet (component initialization)
   if (dataFetched) getNFTData(tokenId);
+
+  // Ensure that the image URL is a string and handle IPFS URL conversion
   if (typeof data.image == "string")
     data.image = GetIpfsUrlFromPinata(data.image);
 

@@ -1,11 +1,14 @@
 import { Link } from "react-router-dom";
 import { GetIpfsUrlFromPinata } from "../utils";
 
+// NFTTile component for displaying individual NFTs in the marketplace
 function NFTTile(data) {
+  // Create a new path for the Link component to navigate to the NFT's details page
   const newTo = {
     pathname: "/nftPage/" + data.data.tokenId,
   };
 
+  // Convert IPFS URL using the utility function
   const IPFSUrl = GetIpfsUrlFromPinata(data.data.image);
 
   return (

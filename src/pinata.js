@@ -5,21 +5,23 @@ const secret = process.env.REACT_APP_PINATA_SECRET;
 const axios = require("axios");
 const FormData = require("form-data");
 
+// Function to upload JSON data to IPFS using Pinata API
 export const uploadJSONToIPFS = async (JSONBody) => {
-  const url = `https://api.pinata.cloud/pinning/pinJSONToIPFS`;
-  //making axios POST request to Pinata ⬇️
+  const url = `https://api.pinata.cloud/pinning/pinJSONToIPFS`; // Pinata API endpoint for pinning JSON to IPFS
+
+  // Making a POST request to Pinata API to pin JSON data to IPFS
   return axios
     .post(url, JSONBody, {
       headers: {
-        pinata_api_key: key,
-        pinata_secret_api_key: secret,
+        pinata_api_key: key, // Set Pinata API key in the request headers
+        pinata_secret_api_key: secret, // Set Pinata secret API key in the request headers
       },
     })
     .then(function (response) {
       return {
         success: true,
         pinataURL:
-          "https://gateway.pinata.cloud/ipfs/" + response.data.IpfsHash,
+          "https://gateway.pinata.cloud/ipfs/" + response.data.IpfsHash, // IPFS URL of the pinned JSON data
       };
     })
     .catch(function (error) {
@@ -31,12 +33,12 @@ export const uploadJSONToIPFS = async (JSONBody) => {
     });
 };
 
+// Function to upload a file to IPFS using Pinata API
 export const uploadFileToIPFS = async (file) => {
   const url = `https://api.pinata.cloud/pinning/pinFileToIPFS`;
-  //making axios POST request to Pinata ⬇️
-
+  // Creating FormData object to handle file and metadata for pinning
   let data = new FormData();
-  data.append("file", file);
+  data.append("file", file); // Append the file to the FormData object
 
   const metadata = JSON.stringify({
     name: "testname",
@@ -46,7 +48,7 @@ export const uploadFileToIPFS = async (file) => {
   });
   data.append("pinataMetadata", metadata);
 
-  //pinataOptions are optional
+  // Metadata for the pinned file (example metadata included here)
   const pinataOptions = JSON.stringify({
     cidVersion: 0,
     customPinPolicy: {
@@ -64,6 +66,7 @@ export const uploadFileToIPFS = async (file) => {
   });
   data.append("pinataOptions", pinataOptions);
 
+  // Making a POST request to Pinata API to pin the file to IPFS
   return axios
     .post(url, data, {
       maxBodyLength: "Infinity",
@@ -74,11 +77,12 @@ export const uploadFileToIPFS = async (file) => {
       },
     })
     .then(function (response) {
+      // Return success response with IPFS URL after pinning is successful
       console.log("image uploaded", response.data.IpfsHash);
       return {
         success: true,
         pinataURL:
-          "https://gateway.pinata.cloud/ipfs/" + response.data.IpfsHash,
+          "https://gateway.pinata.cloud/ipfs/" + response.data.IpfsHash, // IPFS URL of the pinned file
       };
     })
     .catch(function (error) {

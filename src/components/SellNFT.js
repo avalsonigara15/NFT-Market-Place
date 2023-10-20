@@ -2,18 +2,20 @@ import Navbar from "./Navbar";
 import { useState } from "react";
 import { uploadFileToIPFS, uploadJSONToIPFS } from "../pinata";
 import Marketplace from "../Marketplace.json";
-// import { useLocation } from "react-router";
 
+// Component for listing a new NFT for sale on the marketplace
 export default function SellNFT() {
+  // State variables to manage form input, file upload, Ethereum interactions, and messages
   const [formParams, updateFormParams] = useState({
     name: "",
     description: "",
     price: "",
-  });
-  const [fileURL, setFileURL] = useState(null);
+  }); // State for NFT form input values
+  const [fileURL, setFileURL] = useState(null); // State to store the uploaded file's URL
   const ethers = require("ethers");
-  const [message, updateMessage] = useState("");
-  // const location = useLocation();
+  const [message, updateMessage] = useState(""); // State for displaying error/success messages
+
+  // Function to disable the "List NFT" button during file upload and Ethereum transactions
   async function disableButton() {
     const listButton = document.getElementById("list-button");
     listButton.disabled = true;
@@ -21,6 +23,7 @@ export default function SellNFT() {
     listButton.style.opacity = 0.3;
   }
 
+  // Function to enable the "List NFT" button after file upload and Ethereum transactions
   async function enableButton() {
     const listButton = document.getElementById("list-button");
     listButton.disabled = false;
@@ -28,7 +31,7 @@ export default function SellNFT() {
     listButton.style.opacity = 1;
   }
 
-  //This function uploads the NFT image to IPFS
+  // Function to handle file selection and upload the NFT image to IPFS
   async function OnChangeFile(e) {
     var file = e.target.files[0];
     //check for file extension
@@ -36,19 +39,19 @@ export default function SellNFT() {
       //upload the file to IPFS
       disableButton();
       updateMessage("Uploading image.. please dont click anything!");
+      // Upload the file to IPFS using the uploadFileToIPFS function
       const response = await uploadFileToIPFS(file);
       if (response.success === true) {
         enableButton();
         updateMessage("");
         console.log("Uploaded image to Pinata: ", response.pinataURL);
-        setFileURL(response.pinataURL);
+        setFileURL(response.pinataURL); // Set the uploaded file's URL in state
       }
     } catch (e) {
       console.log("Error during file upload", e);
     }
   }
-
-  //This function uploads the metadata to IPFS
+  // Function to upload metadata JSON to IPFS
   async function uploadMetadataToIPFS() {
     const { name, description, price } = formParams;
     //Make sure that none of the fields are empty
@@ -57,6 +60,7 @@ export default function SellNFT() {
       return -1;
     }
 
+    // Create metadata JSON object with NFT details
     const nftJSON = {
       name,
       description,
@@ -65,19 +69,20 @@ export default function SellNFT() {
     };
 
     try {
-      //upload the metadata JSON to IPFS
+      // Upload the metadata JSON to IPFS using the uploadJSONToIPFS function
       const response = await uploadJSONToIPFS(nftJSON);
       if (response.success === true) {
         console.log("Uploaded JSON to Pinata: ", response);
-        return response.pinataURL;
+        return response.pinataURL; // Return the metadata URL after successful upload
       }
     } catch (e) {
       console.log("error uploading JSON metadata:", e);
     }
   }
 
+  // Function to list the NFT for sale on the marketplace
   async function listNFT(e) {
-    e.preventDefault();
+    e.preventDefault(); // Prevent default form submission behavior
 
     //Upload data to IPFS
     try {

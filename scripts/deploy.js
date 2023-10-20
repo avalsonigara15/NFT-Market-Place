@@ -1,15 +1,15 @@
-const { ethers } = require("hardhat");
+// Import necessary modules from the Hardhat framework and Node.js standard library
+// const { ethers } = require("hardhat");
 const hre = require("hardhat");
 const fs = require("fs");
 
+// Async function to deploy the NFTMarketplace smart contract and generate its ABI and address
 async function main() {
-  //get the signer that we will use to deploy
-  const [deployer] = await ethers.getSigners();
-  const balance = await deployer.getBalance();
-  //Get the NFTMarketplace smart contract object and deploy it
+  // Get the factory for the NFTMarketplace smart contract
   const Marketplace = await hre.ethers.getContractFactory("NFTMarketplace");
-  const marketplace = await Marketplace.deploy();
 
+  // Deploy the NFTMarketplace smart contract
+  const marketplace = await Marketplace.deploy();
   await marketplace.deployed();
 
   //Pull the address and ABI out while you deploy, since that will be key in interacting with the smart contract later

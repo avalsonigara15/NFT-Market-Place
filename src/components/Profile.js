@@ -5,15 +5,17 @@ import axios from "axios";
 import { useState } from "react";
 import NFTTile from "./NFTTile";
 
+// Profile component to display user's wallet address, NFT count, total value, and owned NFTs
 export default function Profile() {
-  const [data, updateData] = useState([]);
-  const [address, updateAddress] = useState("0x");
-  const [totalPrice, updateTotalPrice] = useState("0");
-  const [dataFetched, updateFetched] = useState(false);
+  const [data, updateData] = useState([]); // Array to store user's NFT data
+  const [address, updateAddress] = useState("0x"); // Variable to store user's wallet address
+  const [totalPrice, updateTotalPrice] = useState("0"); // Variable to store the total value of user's NFTs
+  const [dataFetched, updateFetched] = useState(false); // Boolean variable indicating whether user data has been fetched
 
+  // Async function to fetch and update user's NFT data from the smart contract
   async function getNFTData(tokenId) {
     const ethers = require("ethers");
-    let sumPrice = 0;
+    let sumPrice = 0; // Variable to calculate the total value of user's NFTs
 
     //After adding your Hardhat network to your metamask, this code will get providers and signers
     const provider = new ethers.providers.Web3Provider(window.ethereum);
@@ -27,20 +29,17 @@ export default function Profile() {
       signer
     );
 
-    //create an NFT Token
+    // Call the getMyNFTs function from the smart contract to retrieve user's NFT data
     let transaction = await contract.getMyNFTs();
 
-    /*
-     * Below function takes the metadata from tokenURI and the data returned by getMyNFTs() contract function
-     * and creates an object of information that is to be displayed
-     */
-
+    // Process and format the fetched data to create an array of objects containing NFT details
     const items = await Promise.all(
       transaction.map(async (i) => {
-        const tokenURI = await contract.tokenURI(i.tokenId);
-        let meta = await axios.get(tokenURI);
-        meta = meta.data;
+        const tokenURI = await contract.tokenURI(i.tokenId); // Get the token URI from the smart contract
+        let meta = await axios.get(tokenURI); // Fetch metadata associated with the token URI
+        meta = meta.data; // Extract metadata object from the response
 
+        // Format NFT details into an object
         let price = ethers.utils.formatUnits(i.price.toString(), "ether");
         let item = {
           price,
@@ -51,19 +50,22 @@ export default function Profile() {
           name: meta.name,
           description: meta.description,
         };
-        sumPrice += Number(price);
-        return item;
+        sumPrice += Number(price); // Add NFT price to the total value
+        return item; // Return the formatted NFT details object
       })
     );
 
-    updateData(items);
-    updateFetched(true);
-    updateAddress(addr);
-    updateTotalPrice(sumPrice.toPrecision(3));
+    // Update state variables with fetched data and set dataFetched to true
+    updateData(items); // Update user's NFT data array
+    updateFetched(true); // Set dataFetched to true to indicate data has been fetched
+    updateAddress(addr); // Update user's wallet address in the state
+    updateTotalPrice(sumPrice.toPrecision(3)); // Update the total value of user's NFTs in the state
   }
 
-  const params = useParams();
-  const tokenId = params.tokenId;
+  const params = useParams(); // Retrieve route parameters
+  const tokenId = params.tokenId; // Extract the tokenId parameter from the route
+
+  // If user data has not been fetched, call the getNFTData function with the retrieved tokenId
   if (!dataFetched) getNFTData(tokenId);
   return (
     <div className="profileClass" style={{ "min-height": "100vh" }}>

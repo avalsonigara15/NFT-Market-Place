@@ -1,28 +1,25 @@
 import fullLogo from "../full_logo.png";
-import {
-  BrowserRouter as Router,
-  Switch,
-  Route,
-  Link,
-  useRouteMatch,
-  useParams,
-} from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useLocation } from "react-router";
 
+// Navbar component for displaying navigation links and wallet connection status
 function Navbar() {
-  const [connected, toggleConnect] = useState(false);
-  const location = useLocation();
-  const [currAddress, updateAddress] = useState("0x");
+  // State variables for managing wallet connection status and current Ethereum address
+  const [connected, toggleConnect] = useState(false); // State variable for wallet connection status
+  const location = useLocation(); // Get the current URL using React Router's useLocation hook
+  const [currAddress, updateAddress] = useState("0x"); // State variable for current Ethereum address
 
+  // Function to get the connected Ethereum address
   async function getAddress() {
     const ethers = require("ethers");
     const provider = new ethers.providers.Web3Provider(window.ethereum);
     const signer = provider.getSigner();
-    const addr = await signer.getAddress();
-    updateAddress(addr);
+    const addr = await signer.getAddress(); // Get the Ethereum address of the connected user
+    updateAddress(addr); // Update the state variable with the fetched address
   }
 
+  // Function to update the wallet connection button UI after connecting
   function updateButton() {
     const ethereumButton = document.querySelector(".enableEthereumButton");
     ethereumButton.textContent = "Connected";
@@ -32,15 +29,8 @@ function Navbar() {
     ethereumButton.classList.add("bg-green-500");
   }
 
+  // Function to connect the website to the user's Ethereum wallet
   async function connectWebsite() {
-    // const chainId = await window.ethereum.request({ method: "eth_chainId" });
-    // if (chainId !== "0x11155111") {
-    //   //alert('Incorrect network! Switch your metamask network to Rinkeby');
-    //   await window.ethereum.request({
-    //     method: "wallet_switchEthereumChain",
-    //     params: [{ chainId: "0x11155111" }],
-    //   });
-    // }
     await window.ethereum
       .request({ method: "eth_requestAccounts" })
       .then(() => {
@@ -51,18 +41,20 @@ function Navbar() {
       });
   }
 
+  // Effect hook to run logic after the component is mounted or when state variables change
   useEffect(() => {
-    if (window.ethereum === undefined) return;
-    let val = window.ethereum.isConnected();
+    if (window.ethereum === undefined) return; // If Ethereum provider is not available, return
+    let val = window.ethereum.isConnected(); // Check if the user is connected to an Ethereum provider
     if (val) {
       console.log("here");
-      getAddress();
-      toggleConnect(val);
-      updateButton();
+      getAddress(); // If connected, fetch the Ethereum address
+      toggleConnect(val); // Update the connected state variable
+      updateButton(); // Update the wallet connection button UI
     }
 
+    // Event listener for changes in connected Ethereum accounts
     window.ethereum.on("accountsChanged", function (accounts) {
-      window.location.replace(location.pathname);
+      window.location.replace(location.pathname); // Reload the current URL on account change
     });
   }, [toggleConnect]);
   return (
@@ -78,9 +70,6 @@ function Navbar() {
                 height={120}
                 className="inline-block -mt-2"
               />
-              {/* <div className="inline-block font-bold text-xl ml-2">
-                NFT Marketplace
-              </div> */}
             </Link>
           </li>
           <li className="w-2/6">
